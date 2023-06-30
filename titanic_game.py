@@ -56,6 +56,7 @@ class Equiments:
         if self.level == v:
           m = k+1
           self.level = level_Eq.get(m)
+          break
     else:
       pass
 #describe class
