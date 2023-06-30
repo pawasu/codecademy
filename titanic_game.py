@@ -1,7 +1,5 @@
 import string
 
-
-#sg
 #create class luck
 class Luck:
   def __init__(self, age, equi):
@@ -29,14 +27,14 @@ class Luck:
     luck_level_eq = {"bronze":0.25, "siver":0.35, "gold":0.5, "platinum":0.7}
     for k, v in luck_level_eq.items():
       if k == equiment.level:
-        self.value_equi_new += (v * self.value_equi)
+        self.value_equi_new = (v * self.value_equi) + self.value_equi
         self.value = self.value_age_new + self.value_equi_new
 #method when upgrade age
   def update_age(self, player):
     luck_level_age = {1:list(range(20)), 0.75:list(range(40, 80)), 0.5:list(range(20, 40)), 0.25:list(range(80, 99))}
     for k, v in luck_level_age.items():
       if player.age in v:
-        self.value_age_new += (k * self.value_age)
+        self.value_age_new = (k * self.value_age) + self.value_age
         self.value = self.value_age_new + self.value_equi_new
 #describe class
   def __repr__(self):
@@ -45,20 +43,26 @@ class Luck:
 
 #create class equiment
 class Equiments:
+  round = 0
   def __init__(self, name, level="bronze"):
     self.name = name
     self.level = level
 #method when upgrade equi
-  def upgrade_level(self):
-    level_Eq = {1:"bronze", 2:"siver", 3:"gold", 4:"platinum"}
-    if self.level != "platninum":
-      for k, v in level_Eq.items():
-        if self.level == v:
-          m = k+1
-          self.level = level_Eq.get(m)
-          break
-    else:
-      pass
+  def upgrade_level(self, player):
+    if self.round % 3 == 0:
+        level_Eq = {1:"bronze", 2:"siver", 3:"gold", 4:"platinum"}
+        if self.level != "platinum":
+            for k, v in level_Eq.items():
+                if self.level == v:
+                    m = k+1
+                    self.level = level_Eq.get(m)
+                    player.luck.update_eq(self)
+                    break
+        else:
+            pass
+#method count round
+  def count_round(self):
+    self.round += 1
 #describe class
   def __repr__(self):
     return "{} have {} level".format(self.name, self.level)
@@ -66,6 +70,7 @@ class Equiments:
   
 #create class player
 class Player:
+  round = 0
   def __init__(self, name, age, equiment):
     self.name = name
     self.age = age
@@ -73,10 +78,21 @@ class Player:
     self.luck = Luck(age, equiment)
 #method when added age
   def added_age(self):
-    self.age += 1
+    if self.round % 9 == 0:
+      self.age += 1
+      self.luck.update_age(self)
 #method when change equi
-  def update_equiment(self, pick):
-    self.equiments = Equiments(pick)
+  def change_equiment(self, pick):
+    if self.equiments.name == pick:
+      pass
+    else:
+      self.equiments = Equiments(pick)
+      #update luck after change euqiment
+      self.luck.change_eq(self.equiments)
+
+#method count_round
+  def count_round(self):
+    self.round += 1
 #describe class
   def __repr__(self):
     return "{name} is a player of TITANIC game is {age} years old. {name} have {equi} ({equi_le}) and have luck at {luck}.".format(name=self.name, age=self.age, equi=self.equiments.name, equi_le=self.equiments.level, luck=self.luck.value)
@@ -96,7 +112,7 @@ class Game:
     survive_v = 5
     survive_v += survive_v * (luck/200)
     self.survive += survive_v
-  def check_status(self):
+  def check_status_win(self):
     if (self.titanic >= 30) & (self.survive < 75):
       return "continue"
     elif self.titanic < 30:
@@ -120,7 +136,7 @@ def get_computer_choice():
     return random.choice(choices)
 
 def determine_winner(user_choice, computer_choice):
-    print(f"Computer chose {computer_choice}.\n")
+    print(f"Computer chose {computer_choice}.")
     if user_choice == computer_choice:
         return "upgrade"
     elif (
@@ -151,18 +167,19 @@ def action_from_result(result, game, player):
   elif result == "sink":
     game.will_sink(player.luck.value)
   else:
-    player.update_equiment(input(f"{player.name} can choose new equiment\n").strip())
-    #update luck after change euqiment
-    player.luck.change_eq(player.equiments)
+    player.change_equiment(input(f"{player.name} can choose new equiment\n").strip())
 
 #play game
 
 #ask number of player and input player and detail
+print("*"*20)
 players, game_players = start_game()
-#loop 3 round meaning total 9 round
-for _ in range(3):
-  #play game 3 round.
-  for _ in range(3):
+print("\n"+("-"*10) + "Start first round" + ("-"*10))
+#loop game until ended
+order = 0
+endgame = True
+while True:
+    order += 1
     #loop in each players.
     for i in range(len(players)):
       #show current status.
@@ -172,20 +189,30 @@ for _ in range(3):
       #do actioin from result.
       action_from_result(result, game_players[i], players[i])
       #show status after play 1 round
-      print(f"At now!! status of {players[i].name} \ntitanic: {game_players[i].titanic} \nsurvive: {game_players[i].survive}")
+      print(f"\nAt now!! status of {players[i].name} \ntitanic: {game_players[i].titanic} \nsurvive: {game_players[i].survive}")
+      status = game_players[i].check_status_win()
+      if status == "lose":
+        print(("*"*10) + f"\n\n{players[i].name}!!! Your leading all player dide" + ("*"*10)+"\n\n")
+        break
+      elif status == "win":
+        print(("*"*10) + f"{players[i].name}!!! Congreat! Your Winn!!!!!!"+ ("*"*10) +"\n\n")
+        break
+      else: pass
       #show ending 1 round for all players
-      print(f"Ending {players[i].name} round.\n")
+      print(("-"*10) + f"Ending {players[i].name} round." + ("-"*10) + "\n")
+      #count round for equi and maybe upgrade
+      players[i].equiments.count_round()
+      players[i].equiments.upgrade_level(players[i])
+      #count round for age and maybe update aeg
+      players[i].count_round()
+      players[i].added_age()
+    status = game_players[i].check_status_win()
+    if status == "lose":
+        break
+    elif status == "win":
+        break
+    else: pass
     #show datial in each player after 1 round
     for i in range(len(players)):
-      print(players[i])
-  #loop all players
-  for i in range(len(players)):
-    #upgrade equiments after 3 round
-    players[i].equiments.upgrade_level()
-    #update luck after upgrade euqiment
-    players[i].luck.update_eq(players[i].equiments)
-#loop all players
-for i in range(len(players)):
-  #update age after 9 round
-  players[i].added_age()
-  players[i].luck.update_age(players[i])
+        print(players[i])
+    print("\n" + ("-"*20) + f"Start {order+2} Round" + ("-"*20))
