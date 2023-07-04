@@ -208,13 +208,13 @@ while True:
     #loop in each players.
     for i in range(len(players)):
       #show current status.
-      print(f"\nstatus of {players[i].name} \ntitanic: {game_players[i].boat} \nsurvive: {game_players[i].survive}\n")
+      print(f"\nstatus of {players[i].name} \nboat: {game_players[i].boat} \nsurvive: {game_players[i].survive}\n")
       #play RPS and save result.
       result = determine_winner(get_user_choice(players[i]), get_computer_choice())
       #do actioin from result.
       action_from_result(result, game_players[i], players[i])
       #show status after play 1 round
-      print(f"\nAt now!! status of {players[i].name} \ntitanic: {game_players[i].boat} \nsurvive: {game_players[i].survive}")
+      print(f"\nAt now!! status of {players[i].name} \nboat: {game_players[i].boat} \nsurvive: {game_players[i].survive}")
       status = game_players[i].check_status_win()
       if status == "lose":
         print(("*"*10) + f"\n\n{players[i].name}!!! Your leading all player dide" + ("*"*10)+"\n\n")
