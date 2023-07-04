@@ -240,4 +240,4 @@ while True:
     #show datial in each player after 1 round
     for i in range(len(players)):
         print(players[i])
-    print("\n" + ("-"*20) + f"Start {order+2} Round" + ("-"*20))
+    print("\n" + ("-"*20) + f"Start {order+1} Round" + ("-"*20))
